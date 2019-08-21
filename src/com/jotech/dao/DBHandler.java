@@ -11,7 +11,7 @@ public final class DBHandler {
     private static Connection connection;
     private static Statement statement;
     private static DBHandler dbHandler = null;
-    private static String DB_DRIVER = "com.mysql.cj.jdbc.Driver";
+    private static String DB_DRIVER = null;
     private static String DB_URL = null;
     private static String DB_USER = null;
     private static String DB_PASSWORD = null;
@@ -31,6 +31,7 @@ public final class DBHandler {
         try(FileReader reader = new FileReader("db.properties")) {
             Properties p = new Properties();
             p.load(reader);
+            DB_DRIVER = p.getProperty("DB_DRIVER") ;
             DB_URL = p.getProperty("DB_URL");
             DB_USER = p.getProperty("DB_USER");
             DB_PASSWORD = p.getProperty("DB_PASSWORD");
@@ -60,7 +61,9 @@ public final class DBHandler {
         } catch (IllegalAccessException | InstantiationException | ClassNotFoundException | SQLException e) {
             Logger.getLogger(DBHandler.class.getName()).log(Level.SEVERE, null, e);
             e.printStackTrace();
-        }
+        } /*catch (SQLException e) {
+            e.printStackTrace();
+        }*/
     }
 
     public boolean execAction(String query) throws SQLException {
