@@ -61,9 +61,7 @@ public final class DBHandler {
         } catch (IllegalAccessException | InstantiationException | ClassNotFoundException | SQLException e) {
             Logger.getLogger(DBHandler.class.getName()).log(Level.SEVERE, null, e);
             e.printStackTrace();
-        } /*catch (SQLException e) {
-            e.printStackTrace();
-        }*/
+        }
     }
 
     public boolean execAction(String query) throws SQLException {
