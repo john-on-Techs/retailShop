@@ -64,22 +64,23 @@ public class ReceivingBean implements BeanInterface<Receiving>{
     public boolean update(Receiving receiving) throws SQLException {
         Connection conn = DBHandler.getInstance().getConnection();
 
-        String query = "UPDATE receiving SET date=?,productId=?,quantity=?,buyingPrice=?,sellingPrice=? where batchNo=?";
+        String query = "UPDATE receiving SET batchNo=?, date=?,productId=?,quantity=?,buyingPrice=?,sellingPrice=? where receiveId=?";
         PreparedStatement ps = conn.prepareStatement(query);
+        ps.setDouble(1, receiving.getBatchNo());
+        ps.setDate(2, (Date) receiving.getDate());
+        ps.setInt(3, receiving.getProductId());
+        ps.setInt(4, receiving.getQuantity());
+        ps.setDouble(5, receiving.getBuyingPrice());
+        ps.setDouble(6, receiving.getSellingPrice());
+        ps.setInt(7,receiving.getReceiveId());
 
-        ps.setDate(1, (Date) receiving.getDate());
-        ps.setInt(2, receiving.getProductId());
-        ps.setInt(3, receiving.getQuantity());
-        ps.setDouble(4, receiving.getBuyingPrice());
-        ps.setDouble(5, receiving.getSellingPrice());
-        ps.setDouble(6, receiving.getBatchNo());
         return ps.executeUpdate() > 0;
     }
     @Override
     public boolean delete(Receiving receiving) throws SQLException {
 
         Connection conn = DBHandler.getInstance().getConnection();
-        String query = "DELETE  FROM receiving where batchNo=?";
+        String query = "DELETE  FROM receiving where receiveId=?";
         PreparedStatement ps = conn.prepareStatement(query);
         ps.setInt(1, receiving.getBatchNo());
         return ps.executeUpdate() > 0;

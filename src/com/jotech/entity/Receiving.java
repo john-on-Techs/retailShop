@@ -3,6 +3,7 @@ package com.jotech.entity;
 import java.util.Date;
 
 public class Receiving {
+    private int receiveId;
     private int batchNo;
     private Date date;
     private int productId;
@@ -22,6 +23,14 @@ public class Receiving {
         this.buyingPrice = buyingPrice;
         this.sellingPrice = sellingPrice;
         this.userId =userId;
+    }
+
+    public int getReceiveId() {
+        return receiveId;
+    }
+
+    public void setReceiveId(int receiveId) {
+        this.receiveId = receiveId;
     }
 
     public int getBatchNo() {
@@ -84,7 +93,8 @@ public class Receiving {
     @Override
     public String toString() {
         return "Receiving{" +
-                "batchNo=" + batchNo +
+                "receiveId=" + receiveId +
+                ", batchNo=" + batchNo +
                 ", date=" + date +
                 ", productId=" + productId +
                 ", quantity=" + quantity +

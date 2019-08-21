@@ -71,7 +71,7 @@ public class AppHelper {
 
     private static void showMenu() {
         System.out.println("***************************");
-        System.out.println("Main Screen");
+        System.out.println("RetailShop Screen");
         System.out.println("***************************");
         System.out.println("Select an a action :");
         System.out.println("1. Products");
@@ -79,7 +79,7 @@ public class AppHelper {
         System.out.println("3. Sales");
         System.out.println("4. Manage Users");
         System.out.println("5. Logout");
-        System.out.println("6. To quit!!");
+        System.out.println("100. To quit!!");
         System.out.println("_____________________________________");
         System.out.print("answer: ");
     }

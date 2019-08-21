@@ -15,6 +15,8 @@ public final class DBHandler {
     private static String DB_URL = null;
     private static String DB_USER = null;
     private static String DB_PASSWORD = null;
+    private static String defaultUsername=null;
+    private static int defaultUserId=0;
 
     static {
         readPropertiesFile();
@@ -28,13 +30,15 @@ public final class DBHandler {
 
     private static void readPropertiesFile() {
 
-        try(FileReader reader = new FileReader("db.properties")) {
+        try (FileReader reader = new FileReader("db.properties")) {
             Properties p = new Properties();
             p.load(reader);
-            DB_DRIVER = p.getProperty("DB_DRIVER") ;
+            DB_DRIVER = p.getProperty("DB_DRIVER");
             DB_URL = p.getProperty("DB_URL");
             DB_USER = p.getProperty("DB_USER");
             DB_PASSWORD = p.getProperty("DB_PASSWORD");
+            defaultUserId = Integer.parseInt(p.getProperty("default_id"));
+            defaultUsername = p.getProperty("default_name");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -64,6 +68,7 @@ public final class DBHandler {
         }
     }
 
+    // or
     public boolean execAction(String query) throws SQLException {
         statement = connection.createStatement();
         statement.execute(query);
@@ -101,13 +106,24 @@ public final class DBHandler {
                 "  `name` VARCHAR(100) NOT NULL,\n" +
                 "  PRIMARY KEY (`id`)\n" +
                 ") ENGINE=InnoDB DEFAULT CHARSET=latin1";
-        // String query2 ="INSERT  INTO user(id, name) values (1,'jotech')";
+
+
+        String query2 = "SELECT COUNT(*) AS 'count' FROM user";
+        String query3 = "INSERT INTO user(id,name) values ( "+defaultUserId+", '" +defaultUsername+"')";
 
         try {
             statement = connection.createStatement();
-            statement.addBatch(query1);
-            // statement.addBatch(query2);
-            statement.executeBatch();
+            statement.execute(query1);
+
+            ResultSet rs = statement.executeQuery(query2);
+
+            if (rs.next()) {
+                int count = rs.getInt("count");
+                //if no any user record insert the first record
+                if (!(count > 0)) {
+                    statement.executeUpdate(query3);
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -129,18 +145,20 @@ public final class DBHandler {
     }
 
     private static void setupReceivingTable() {
-        String query = "CREATE TABLE IF NOT EXISTS `receiving` (\n" +
-                "  `batchNo` INT(11) NOT NULL,\n" +
-                "  `date` DATE NOT NULL,\n" +
-                "  `productId` INT NOT NULL,\n" +
-                "  `quantity` INT NOT NULL,\n" +
-                "  `buyingPrice` DECIMAL(10,2) NOT NULL,\n" +
-                "  `sellingPrice` DECIMAL(10,2) NOT NULL,\n" +
-                "  `userId` INT NOT NULL,\n" +
-                "  PRIMARY KEY (`batchNo`),\n" +
-                " FOREIGN KEY (`productId`) REFERENCES product(id),\n" +
-                " FOREIGN KEY (`userId`) REFERENCES user(id) \n" +
-                ") ENGINE=InnoDB DEFAULT CHARSET=latin1";
+        String query = "CREATE TABLE IF NOT EXISTS `receiving`(\n" +
+                "    `receiveId`    INT   NOT NULL AUTO_INCREMENT,\n" +
+                "    `batchNo`      int(11)        NOT NULL,\n" +
+                "    `date`         DATE          NOT NULL,\n" +
+                "    `productId`    INT(11)        NOT NULL,\n" +
+                "    `quantity`     INT(11)        NOT NULL,\n" +
+                "    `buyingPrice`  DECIMAL(10, 2) NOT NULL,\n" +
+                "    `sellingPrice` DECIMAL(10, 2) NOT NULL,\n" +
+                "    `userId`       INT(11)    NOT NULL,\n" +
+                "    PRIMARY KEY (`receiveId`),\n" +
+                "    FOREIGN KEY (`productId`) REFERENCES `product` (`id`),\n" +
+                "    FOREIGN KEY (`userId`) REFERENCES `user` (`id`)\n" +
+                ") ENGINE = InnoDB\n" +
+                "  DEFAULT CHARSET = latin1";
         try {
             statement = connection.createStatement();
             statement.execute(query);
@@ -158,8 +176,8 @@ public final class DBHandler {
                 "  `quantity` INT NOT NULL,\n" +
                 "  `userId` INT NOT NULL,\n" +
                 "  PRIMARY KEY (`id`),\n" +
-                " FOREIGN KEY (`productId`) REFERENCES product(id) ,\n" +
-                " FOREIGN KEY (`userId`) REFERENCES user(id)\n" +
+                " FOREIGN KEY (`productId`) REFERENCES product(id) ON DELETE CASCADE ON UPDATE  CASCADE ,\n" +
+                " FOREIGN KEY (`userId`) REFERENCES user(id) ON DELETE CASCADE ON UPDATE  CASCADE \n" +
                 ") ENGINE=InnoDB DEFAULT CHARSET=latin1";
         try {
             statement = connection.createStatement();
@@ -175,7 +193,7 @@ public final class DBHandler {
                 "  `productId` INT NOT NULL,\n" +
                 "  `runningBalance` INT NOT NULL,\n" +
                 "  PRIMARY KEY (`id`,`productId`),\n" +
-                " FOREIGN KEY (`productId`) REFERENCES product(id)\n" +
+                " FOREIGN KEY (`productId`) REFERENCES product(id) ON DELETE CASCADE ON UPDATE  CASCADE\n" +
                 ") ENGINE=InnoDB DEFAULT CHARSET=latin1";
         try {
             statement = connection.createStatement();

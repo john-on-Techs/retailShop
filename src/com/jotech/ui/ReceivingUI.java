@@ -101,7 +101,7 @@ public class ReceivingUI {
     }
 
     private void readReceiving() {
-        int productId = Integer.parseInt(Utils.readKeyboard("product Id"));
+        int productId = Integer.parseInt(Utils.readKeyboard("receiving Id"));
         Receiving receiving = null;
         try {
             receiving = receivingBean.read(productId);
@@ -114,7 +114,7 @@ public class ReceivingUI {
     }
 
     private void updateReceiving() {
-        int productId = Integer.parseInt(Utils.readKeyboard("product id"));
+        int productId = Integer.parseInt(Utils.readKeyboard("receiving id"));
         Receiving receiving = null;
         try {
             receiving = receivingBean.read(productId);
@@ -132,10 +132,10 @@ public class ReceivingUI {
     }
 
     private void deleteRecieving() {
-        int productId = Integer.parseInt(Utils.readKeyboard("product Id"));
+        int receivingId = Integer.parseInt(Utils.readKeyboard("receiving Id"));
         Receiving receiving = null;
         try {
-            receiving = receivingBean.read(productId);
+            receiving = receivingBean.read(receivingId);
         } catch (SQLException e) {
             e.printStackTrace();
         }
