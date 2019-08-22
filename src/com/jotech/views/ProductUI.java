@@ -1,7 +1,6 @@
-package com.jotech.ui;
+package com.jotech.views;
 
 import com.jotech.bean.ProductBean;
-import com.jotech.dao.DBHandler;
 import com.jotech.entity.Product;
 import com.jotech.util.AppHelper;
 import com.jotech.util.Utils;
@@ -64,12 +63,11 @@ public class ProductUI {
         try {
             if (productBean.create(product)) {
                 System.out.println("Product added successfully");
-                DBHandler.getInstance().commitChanges();
-            }else{
-                DBHandler.getInstance().rollbackChanges();
-
+            }else {
+                System.out.println("product could not be added");
             }
         } catch (SQLException e) {
+            System.out.println("Some error occurred");
             Logger.getLogger(AppHelper.class.getName()).log(Level.SEVERE, null, e);
         }
     }
@@ -77,9 +75,14 @@ public class ProductUI {
     private void readProduct() {
         int productId = Integer.parseInt(Utils.readKeyboard("product Id"));
         try {
-            Product product = productBean.read(productId);
-            System.out.println(product.getName() + " "+product.getDescription());
+          Product product = productBean.read(productId);
+          if(product !=null){
+              System.out.println(product);
+          }else{
+              System.out.println("The product with the supplied id:" +productId+" Does not exist");
+          }
         } catch (SQLException e) {
+            System.out.println("some error occurred: "+e.getLocalizedMessage());
             e.printStackTrace();
         }
     }
@@ -103,11 +106,12 @@ public class ProductUI {
                 product.setDescription(description);
             }
             try {
-                productBean.update(product);
-                DBHandler.getInstance().commitChanges();
-                System.out.println("Product updated successfully");
+                if(productBean.update(product)){
+                    System.out.println("Product updated successfully");
+                }else{
+                    System.out.println("Could not update the product");
+                }
             } catch (SQLException e) {
-                DBHandler.getInstance().rollbackChanges();
 
                 e.printStackTrace();
             }
@@ -128,12 +132,13 @@ public class ProductUI {
         }
         if(product != null){
             try {
-                productBean.delete(product);
-                DBHandler.getInstance().commitChanges();
-                System.out.println("Product deleted successfully");
+                if(productBean.delete(product)){
+                    System.out.println("Product deleted successfully");
+                }else {
+                    System.out.println("Could not delete the product");
+                }
             } catch (SQLException e) {
-                DBHandler.getInstance().rollbackChanges();
-
+                System.out.println("Some error occurred"+e.getLocalizedMessage());
                 e.printStackTrace();
             }
         }
@@ -143,16 +148,19 @@ public class ProductUI {
     }
 
     private void listProducts() {
-        ArrayList<Product> productList = new ArrayList<>();
         try {
-            productList = productBean.getProducts();
+            ArrayList<Product> productList = productBean.getProducts();
+            if(productList.size()>0){
+                for(Product product: productList){
+                    System.out.println(product.getName() + " "+product.getDescription());
+                }
+            }else{
+                System.out.println("There are no products registered yet");
+            }
         } catch (SQLException e) {
+            System.out.println("some error occurred"+e.getLocalizedMessage());
             e.printStackTrace();
         }
-        for(Product product: productList){
-            System.out.println(product.getName() + " "+product.getDescription());
-        }
-
     }
 
 }

@@ -1,15 +1,12 @@
-package com.jotech.ui;
+package com.jotech.views;
 
 import com.jotech.bean.UserBean;
 import com.jotech.dao.DBHandler;
 import com.jotech.entity.User;
-import com.jotech.util.AppHelper;
 import com.jotech.util.Utils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class UserUI {
     private UserBean userBean = new UserBean();
@@ -37,10 +34,10 @@ public class UserUI {
                     listUsers();
                     break;
                 case 6:
-                    choice =6;
+                    choice = 6;
                     break;
             }
-        }while(choice !=6);
+        } while (choice != 6);
     }
 
     private void showUserMenu() {
@@ -59,65 +56,58 @@ public class UserUI {
     private void createUser() {
         int userId = Integer.parseInt(Utils.readKeyboard("user id"));
         String name = Utils.readKeyboard("user name");
-        User user = new User(userId,name);
+        User user = new User(userId, name);
         try {
             if (userBean.create(user)) {
-                DBHandler.getInstance().commitChanges();
                 System.out.println("User added successfully");
+            } else {
+                System.out.println("Could not register this user");
             }
 
         } catch (SQLException e) {
-            DBHandler.getInstance().rollbackChanges();
-            Logger.getLogger(AppHelper.class.getName()).log(Level.SEVERE, null, e);
+            System.out.println("Some error occurred" + e.getLocalizedMessage());
             e.printStackTrace();
         }
     }
 
     private void readUser() {
         int userId = Integer.parseInt(Utils.readKeyboard("user Id"));
-        User user = null;
         try {
-          user = userBean.read(userId);
-            System.out.println(user.getName());
+            User user = userBean.read(userId);
+            if (user != null) {
+                System.out.println(user.getName());
+            } else {
+                System.out.println("user does not exist");
+            }
         } catch (SQLException e) {
+            System.out.println("Some error occurred");
             e.printStackTrace();
         }
-        if(user ==null){
-            System.out.println("user does not exist");
-        }
+
     }
 
     private void updateUser() {
         int userId = Integer.parseInt(Utils.readKeyboard("user Id"));
-        User user = null;
         try {
-            user = userBean.read(userId);
-            System.out.println(user.getName());
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        if(user != null){
-            String name = Utils.readKeyboard(" new name");
-
-            if(name != null && !name.isEmpty()){
-                user.setName(name);
-            }
-
-            try {
-                if(userBean.update(user)){
-                    DBHandler.getInstance().commitChanges();
+            User user = userBean.read(userId);
+            if (user != null) {
+                String name = Utils.readKeyboard(" new name");
+                if (name != null && !name.isEmpty()) {
+                    user.setName(name);
+                }
+                if (userBean.update(user)) {
                     System.out.println("User updated successfully");
+                } else {
+                    System.out.println("Could not update details of this user");
                 }
 
-            } catch (SQLException e) {
-                DBHandler.getInstance().rollbackChanges();
-                e.printStackTrace();
+            } else {
+                System.out.println("The user does not exist");
             }
+        } catch (SQLException e) {
+            System.out.println("Some error occurred");
+            e.printStackTrace();
         }
-        else{
-            System.out.println("The user does not exist");
-        }
-
     }
 
     private void deleteUser() {
@@ -128,31 +118,32 @@ public class UserUI {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        if(user != null){
+        if (user != null) {
             try {
-                if(userBean.delete(user)){
+                if (userBean.delete(user)) {
                     System.out.println("User deleted successfully");
                     DBHandler.getInstance().commitChanges();
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-        }
-        else{
+        } else {
             System.out.println("The user does not exist");
         }
     }
 
     private void listUsers() {
-        ArrayList<User> userList = new ArrayList<>();
         try {
-            userList = userBean.getUsers();
+            ArrayList<User> userList = userBean.getUsers();
+            if (userList.size() > 0) {
+                for (User user : userList) {
+                    System.out.println(user.getName());
+                }
+            } else {
+                System.out.println("No users yet");
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        for(User user: userList){
-            System.out.println(user.getName());
-        }
-
     }
 }

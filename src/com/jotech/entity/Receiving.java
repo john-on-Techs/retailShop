@@ -15,9 +15,8 @@ public class Receiving {
     public Receiving() {
     }
 
-    public Receiving(int batchNo, Date date, int productId, int quantity, double buyingPrice, double sellingPrice,int userId) {
+    public Receiving(int batchNo, int productId, int quantity, double buyingPrice, double sellingPrice,int userId) {
         this.batchNo = batchNo;
-        this.date = date;
         this.productId = productId;
         this.quantity = quantity;      ;
         this.buyingPrice = buyingPrice;

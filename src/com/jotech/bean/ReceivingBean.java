@@ -2,45 +2,82 @@ package com.jotech.bean;
 
 import com.jotech.dao.DBHandler;
 import com.jotech.entity.Receiving;
+import com.jotech.entity.RunningBalanceProduct;
+import com.jotech.enums.DataTypes;
 
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 public class ReceivingBean implements BeanInterface<Receiving>{
+    private RunningBalanceProductBean runningBalanceProductBean = new RunningBalanceProductBean();
+
     @Override
     public boolean create(Receiving receiving) throws SQLException {
-        String query = "INSERT INTO receiving(batchNo,date,productId,quantity,buyingPrice,sellingPrice,userId) values(?,?,?,?,?,?,?)";
-        Connection conn = DBHandler.getInstance().getConnection();
-        PreparedStatement ps = conn.prepareStatement(query);
-        ps.setInt(1, receiving.getBatchNo());
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        String dateString = simpleDateFormat.format(receiving.getDate());
-        ps.setDate(2, Date.valueOf(dateString));
-        ps.setInt(3, receiving.getProductId());
-        ps.setInt(4, receiving.getQuantity());
-        ps.setDouble(5, receiving.getBuyingPrice());
-        ps.setDouble(6, receiving.getSellingPrice());
-        ps.setInt(7,receiving.getUserId());
+        String query = "INSERT INTO receiving(batchNo,date,productId,quantity,buyingPrice,sellingPrice,userId) values(?,NOW(),?,?,?,?,?)";
+        DataTypes[] dataTypes = new DataTypes[6];
+        Object[] params = new Object[6];
 
-        return ps.executeUpdate() > 0;
+        params[0]= receiving.getBatchNo();
+        params[1]= receiving.getProductId();
+        params[2]= receiving.getQuantity();
+        params[3]= receiving.getBuyingPrice();
+        params[4]= receiving.getSellingPrice();
+        params[5]= receiving.getUserId();
+
+        dataTypes[0] = DataTypes.INTEGER;
+        dataTypes[1] = DataTypes.INTEGER;
+        dataTypes[2] = DataTypes.INTEGER;
+        dataTypes[3] = DataTypes.DOUBLE;
+        dataTypes[4] = DataTypes.DOUBLE;
+        dataTypes[5] = DataTypes.INTEGER;
+
+
+        RunningBalanceProduct runningBalanceProduct;
+        try {
+            if(runningBalanceProductBean.isProductHavingRunningBalance(receiving.getProductId())){
+                runningBalanceProduct = runningBalanceProductBean.getRunningBalanceProduct(receiving.getProductId());
+                runningBalanceProduct.setRunningBalance(runningBalanceProduct.getRunningBalance()+receiving.getQuantity());
+                if(runningBalanceProductBean.updateRunningBalanceProduct(runningBalanceProduct) && DBHandler.getInstance().executeAction(query,params,dataTypes)){
+                    DBHandler.getInstance().commitChanges();
+                    return true;
+                }
+            }else{
+                runningBalanceProduct = new RunningBalanceProduct(receiving.getProductId(),receiving.getQuantity());
+                if(runningBalanceProductBean.create(runningBalanceProduct) && DBHandler.getInstance().executeAction(query,params,dataTypes)){
+                    DBHandler.getInstance().commitChanges();
+                    return true;
+                }
+
+            }
+        } catch (SQLException e) {
+            DBHandler.getInstance().rollbackChanges();
+            e.printStackTrace();
+            return false;
+        }
+        return false;
     }
 
     @Override
     public Receiving read(int id) throws SQLException {
-        String query = "SELECT * FROM receiving WHERE productId=" + id+" LIMIT 1";
-        ResultSet rs = DBHandler.getInstance().executeQuery(query);
-        Receiving receiving = new Receiving();
+        DataTypes[] dataTypes = new DataTypes[1];
+        Object[] params = new Object[1];
+        String query = "SELECT * FROM receiving WHERE productId=? LIMIT 1";
+        dataTypes[0]=DataTypes.INTEGER;
+        params[0]= id;
+
+        ResultSet rs = DBHandler.getInstance().executeQuery(query,params,dataTypes);
+        Receiving receiving = null;
         if (rs.next()) {
+            receiving = new Receiving();
             setReceivingObject(rs, receiving);
         }
         return receiving;
     }
 
-
     public ArrayList<Receiving> getReceivings() throws SQLException {
         String query = "SELECT * FROM receiving";
-        ResultSet rs = DBHandler.getInstance().executeQuery(query);
+        ResultSet rs = DBHandler.getInstance().executeQuery(query,null,null);
         ArrayList<Receiving> receivingList = new ArrayList<>();
         while (rs.next()) {
             Receiving receiving = new Receiving();
@@ -62,28 +99,11 @@ public class ReceivingBean implements BeanInterface<Receiving>{
     }
     @Override
     public boolean update(Receiving receiving) throws SQLException {
-        Connection conn = DBHandler.getInstance().getConnection();
-
-        String query = "UPDATE receiving SET batchNo=?, date=?,productId=?,quantity=?,buyingPrice=?,sellingPrice=? where receiveId=?";
-        PreparedStatement ps = conn.prepareStatement(query);
-        ps.setDouble(1, receiving.getBatchNo());
-        ps.setDate(2, (Date) receiving.getDate());
-        ps.setInt(3, receiving.getProductId());
-        ps.setInt(4, receiving.getQuantity());
-        ps.setDouble(5, receiving.getBuyingPrice());
-        ps.setDouble(6, receiving.getSellingPrice());
-        ps.setInt(7,receiving.getReceiveId());
-
-        return ps.executeUpdate() > 0;
+      return false;
     }
     @Override
     public boolean delete(Receiving receiving) throws SQLException {
-
-        Connection conn = DBHandler.getInstance().getConnection();
-        String query = "DELETE  FROM receiving where receiveId=?";
-        PreparedStatement ps = conn.prepareStatement(query);
-        ps.setInt(1, receiving.getBatchNo());
-        return ps.executeUpdate() > 0;
+      return false;
     }
 
 }

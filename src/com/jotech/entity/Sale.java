@@ -13,8 +13,7 @@ public class Sale {
     public Sale() {
     }
 
-    public Sale( Date date, int productId, double sellingPrice, int quantity,int userId) {
-        this.date = date;
+    public Sale( int productId, double sellingPrice, int quantity,int userId) {
         this.productId = productId;
         this.sellingPrice = sellingPrice;
         this.quantity = quantity;

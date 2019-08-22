@@ -1,8 +1,11 @@
 package com.jotech.dao;
 
+import com.jotech.enums.DataTypes;
+
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,8 +18,8 @@ public final class DBHandler {
     private static String DB_URL = null;
     private static String DB_USER = null;
     private static String DB_PASSWORD = null;
-    private static String defaultUsername=null;
-    private static int defaultUserId=0;
+    private static String defaultUsername = null;
+    private static int defaultUserId = 0;
 
     static {
         readPropertiesFile();
@@ -68,17 +71,44 @@ public final class DBHandler {
         }
     }
 
-    // or
-    public boolean execAction(String query) throws SQLException {
-        statement = connection.createStatement();
-        statement.execute(query);
-        return true;
+    private PreparedStatement getPreparedStatement(String query, Object[] params, DataTypes[] dataTypes) throws SQLException {
+        PreparedStatement ps = connection.prepareStatement(query);
+        if (params!=null) {
+            for (int i = 0; i < params.length; i++) {
+                if (dataTypes[i] == DataTypes.STRING) {
+                    ps.setString(i + 1, String.valueOf(params[i]));
+                } else if (dataTypes[i] == DataTypes.INTEGER) {
+                    ps.setInt(i + 1, (Integer) params[i]);
+                } else if (dataTypes[i] == DataTypes.DOUBLE) {
+                    ps.setDouble(i + 1, (Double) params[i]);
+                } else if (dataTypes[i] == DataTypes.DATE) {
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                    String date = dateFormat.format(params[i]);
+                    ps.setDate(i + 1, Date.valueOf(date));
+                } else if (dataTypes[i] == DataTypes.BOOLEAN) {
+                    ps.setBoolean(i + 1, (Boolean) params[i]);
+                } else if (dataTypes[i] == DataTypes.BYTE) {
+                    ps.setByte(i + 1, (Byte) params[i]);
+                } else if (dataTypes[i] == DataTypes.TIME) {
+                    ps.setTime(i + 1, (Time) params[i]);
+                } else if (dataTypes[i] == DataTypes.TIMESTAMP) {
+                    ps.setTimestamp(i + 1, (Timestamp) params[i]);
+                }
+            }
+        }
+        return ps;
     }
 
-    public ResultSet executeQuery(String query) throws SQLException {
-        statement = connection.createStatement();
-        return statement.executeQuery(query);
+    public boolean executeAction(String query, Object[] params, DataTypes[] dataTypes) throws SQLException {
+        PreparedStatement ps = getPreparedStatement(query, params, dataTypes);
+        return ps.executeUpdate() > 0;
     }
+
+    public ResultSet executeQuery(String query, Object[] params, DataTypes[] dataTypes) throws SQLException {
+        PreparedStatement ps = getPreparedStatement(query, params, dataTypes);
+        return ps.executeQuery();
+    }
+
 
     public Connection getConnection() {
         return connection;
@@ -109,7 +139,7 @@ public final class DBHandler {
 
 
         String query2 = "SELECT COUNT(*) AS 'count' FROM user";
-        String query3 = "INSERT INTO user(id,name) values ( "+defaultUserId+", '" +defaultUsername+"')";
+        String query3 = "INSERT INTO user(id,name) values ( " + defaultUserId + ", '" + defaultUsername + "')";
 
         try {
             statement = connection.createStatement();
@@ -148,7 +178,7 @@ public final class DBHandler {
         String query = "CREATE TABLE IF NOT EXISTS `receiving`(\n" +
                 "    `receiveId`    INT   NOT NULL AUTO_INCREMENT,\n" +
                 "    `batchNo`      int(11)        NOT NULL,\n" +
-                "    `date`         DATE          NOT NULL,\n" +
+                "    `date`         DATE          NOT NULL ,\n" +
                 "    `productId`    INT(11)        NOT NULL,\n" +
                 "    `quantity`     INT(11)        NOT NULL,\n" +
                 "    `buyingPrice`  DECIMAL(10, 2) NOT NULL,\n" +
@@ -170,7 +200,7 @@ public final class DBHandler {
     private static void setupSaleTable() {
         String query = "CREATE TABLE IF NOT EXISTS `sale` (\n" +
                 "  `id` INT(11) NOT NULL AUTO_INCREMENT,\n" +
-                "  `date` DATE NOT NULL,\n" +
+                "  `date` DATE NOT NULL ,\n" +
                 "  `productId` INT NOT NULL,\n" +
                 "  `sellingPrice` DECIMAL(10,2) NOT NULL,\n" +
                 "  `quantity` INT NOT NULL,\n" +
